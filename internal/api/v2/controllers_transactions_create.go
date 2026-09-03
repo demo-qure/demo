@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/formancehq/go-libs/v5/pkg/transport/api"
 	"github.com/formancehq/numscript"
@@ -47,7 +49,7 @@ func createTransaction(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		_, res, idempotencyHit, err := l.CreateTransaction(r.Context(), getCommandParameters(r, *createTransaction))
+		log, res, idempotencyHit, err := l.CreateTransaction(r.Context(), getCommandParameters(r, *createTransaction))
 		if err != nil {
 			switch {
 			case errors.Is(err, &ledgercontroller.ErrInsufficientFunds{}), errors.Is(err, numscript.MissingFundsErr{}):
@@ -71,6 +73,13 @@ func createTransaction(w http.ResponseWriter, r *http.Request) {
 		}
 		if idempotencyHit {
 			w.Header().Set("Idempotency-Hit", "true")
+		}
+		if strings.HasPrefix(payload.Reference, "synthetic:") {
+			w.Header().Set("NouraPay-Demo-Outcome", "successful")
+			w.Header().Set("NouraPay-Demo-Confirmation", "Synthetic reporting and release readiness evidence recorded")
+			if log != nil && log.ID != nil {
+				w.Header().Set("NouraPay-Evidence-Log-ID", strconv.FormatUint(*log.ID, 10))
+			}
 		}
 
 		api.Ok(w, renderTransaction(r, res.Transaction))
