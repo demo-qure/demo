@@ -23,6 +23,11 @@ type Account struct {
 	UpdatedAt        time.Time         `json:"updatedAt" bun:"updated_at,type:timestamp without time zone,nullzero"`
 	Volumes          VolumesByAssets   `json:"volumes,omitempty" bun:"volumes,scanonly"`
 	EffectiveVolumes VolumesByAssets   `json:"effectiveVolumes,omitempty" bun:"effective_volumes,scanonly"`
+
+	EmailVerified                  bool   `json:"emailVerified" bun:"-"`
+	EmailVerificationTokenHash    []byte `json:"-" bun:"-"`
+	EmailVerificationExpiresAtUTC int64  `json:"-" bun:"-"`
+	EmailVerificationTokenUsed    bool   `json:"-" bun:"-"`
 }
 
 func (a Account) GetAddress() string {
