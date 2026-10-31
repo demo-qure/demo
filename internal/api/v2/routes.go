@@ -86,6 +86,7 @@ func NewRouter(
 				router.Post("/schemas/{version}", insertSchema)
 				router.Get("/schemas/{version}", readSchema)
 				router.Get("/schemas", listSchemas(routerOptions.paginationConfig))
+				router.Post("/reporting/release-readiness", recordReleaseReadinessOutcome)
 
 				if routerOptions.exporters {
 					router.Route("/pipelines", func(router chi.Router) {
